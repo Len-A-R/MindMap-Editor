@@ -17,7 +17,6 @@ export const loadFromFile = (callback) => {
   input.onchange = (e) => {
     const file = e.target.files[0]
     if (!file) return
-    
     const reader = new FileReader()
     reader.onload = (event) => {
       try {
@@ -33,48 +32,26 @@ export const loadFromFile = (callback) => {
   input.click()
 }
 
-// экспорт в PNG
-export const exportToPNG = async (svgElement, filename) => {
-  if (!svgElement) {
-    console.error('SVG element not found')
+export const exportMindMapToPNG = async (element, filename) => {
+  if (!element) {
+    console.error('Element not found')
     return
   }
 
-  // Получаем размеры SVG
-  const svgRect = svgElement.getBoundingClientRect()
-  const width = Math.max(svgRect.width, 100)
-  const height = Math.max(svgRect.height, 100)
-
-  // Создаём canvas
-  const canvas = document.createElement('canvas')
-  canvas.width = width * 2 // Увеличиваем разрешение
-  canvas.height = height * 2
-  const ctx = canvas.getContext('2d')
-  ctx.scale(2, 2)
-
-  // Заливаем фон
-  ctx.fillStyle = '#0f172a'
-  ctx.fillRect(0, 0, width, height)
-
-  // Получаем SVG как строку
-  const svgData = new XMLSerializer().serializeToString(svgElement)
-  const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
-  const url = URL.createObjectURL(svgBlob)
-
-  // Рисуем SVG на canvas
-  const img = new Image()
-  img.onload = () => {
-    ctx.drawImage(img, 0, 0, width, height)
-    URL.revokeObjectURL(url)
-
-    // Скачиваем PNG
-    const pngUrl = canvas.toDataURL('image/png')
-    const a = document.createElement('a')
-    a.href = pngUrl
-    a.download = filename || `mindmap_${new Date().toISOString().split('T')[0]}.png`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-  }
-  img.src = url
+  const html2canvas = (await import('html2canvas')).default
+  
+  const canvas = await html2canvas(element, {
+    backgroundColor: '#0f172a',
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+    logging: false
+  })
+  
+  const link = document.createElement('a')
+  link.download = filename || `mindmap_${new Date().toISOString().split('T')[0]}.png`
+  link.href = canvas.toDataURL('image/png')
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }

@@ -6,13 +6,18 @@
   @apply flex-1 relative overflow-hidden;
 }
 
-/* Миникарта слева выше */
-.minimapWrapper {
-  @apply absolute left-4 z-30;
-  bottom: 60px; /* Выше статус бара */
+/* Контейнер для захвата PNG */
+.canvasContainer {
+  @apply absolute inset-0;
+  background-color: #0f172a;
 }
 
-/* Статус бар слева внизу */
+/* Остальные стили без изменений */
+.minimapWrapper {
+  @apply absolute left-4 z-30;
+  bottom: 80px;
+}
+
 .statusBarWrapper {
   @apply absolute bottom-4 left-4 z-30;
 }
@@ -37,12 +42,6 @@
   @apply w-px h-3 bg-slate-600;
 }
 
-/* Панель свойств справа */
-.propertiesWrapper {
-  @apply absolute right-2 top-16 bottom-4 z-40;
-}
-
-/* Подсказки справа на уровне статус бара */
 .helpWrapper {
   @apply absolute bottom-4 right-4 flex items-end gap-2 z-30;
 }

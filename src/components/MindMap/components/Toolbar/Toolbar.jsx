@@ -1,10 +1,10 @@
 import React from 'react'
-import { Button } from '@components/common/Button'
-import { Icon } from '@components/common/Icon'
-import { saveToFile, loadFromFile, exportToPNG } from '@utils/fileUtils'
+import { Icon } from '@components/common/Icon.jsx'
+import { Button } from '@components/common/Button.jsx'
+import { saveToFile, loadFromFile, exportMindMapToPNG } from '@utils/fileUtils.js'
 import styles from './Toolbar.module.css'
 
-const Toolbar = ({ mindMap, user, onLogout }) => {
+const Toolbar = ({ mindMap, user, onLogout, onExportPNG }) => {
   const {
     selectedNodes,
     addChildNode,
@@ -81,17 +81,6 @@ const Toolbar = ({ mindMap, user, onLogout }) => {
       if (data.nodes) setNodes(data.nodes)
       if (data.connections) setConnections(data.connections)
     })
-  }
-
-  // Новая функция экспорта в PNG
-  const handleExportPNG = async () => {
-    // Находим SVG элемент в Canvas
-    const svgElement = document.querySelector('[class*="svg"]')
-    if (!svgElement) {
-      alert('Не удалось найти карту для экспорта')
-      return
-    }
-    await exportToPNG(svgElement, `mindmap_${new Date().toISOString().split('T')[0]}.png`)
   }
 
   const zoomIn = () => setScale(s => Math.min(s * 1.2, 3))
@@ -211,8 +200,7 @@ const Toolbar = ({ mindMap, user, onLogout }) => {
           Загрузить
         </Button>
 
-        {/* Кнопка экспорта в PNG */}
-        <Button icon="Image" onClick={handleExportPNG} variant="primary">
+        <Button icon="Image" onClick={onExportPNG} variant="primary">
           PNG
         </Button>
 

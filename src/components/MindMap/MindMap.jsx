@@ -1,46 +1,39 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useMindMap } from './hooks/useMindMap.js'
 import Canvas from './components/Canvas/Canvas.jsx'
 import Toolbar from './components/Toolbar/Toolbar.jsx'
 import PropertiesPanel from './components/PropertiesPanel/PropertiesPanel.jsx'
 import MiniMap from './components/MiniMap/MiniMap.jsx'
+import { exportMindMapToPNG } from '@utils/fileUtils.js'
 import { Icon } from '@components/common/Icon.jsx'
 import styles from './MindMap.module.css'
-import ExportCanvas from './components/ExportCanvas/ExportCanvas.jsx'
-import Connections from './components/Connections/Connections.jsx'
 
 const MindMap = ({ user, onLogout }) => {
   const mindMap = useMindMap(user)
   const [showHelp, setShowHelp] = useState(true)
-  const [exportCanvas, setExportCanvas] = useState(null)
-  
-  const handleExportPNG  = () => {
-    if (!exportCanvas) {
-      alert('Карта ещё не готова для экспорта')
-      return
-    }
-    const link = document.createElement('a')
-    link.download =`mindmap_${new Date().toISOString().split('T')[0]}.png`
-    link.href = exportCanvas.toDataURL()
-    link.click()
+  const canvasRef = useRef(null) // Ссылка на контейнер канвы
+
+  const handleExportPNG = () => {
+    console.log('Export clicked, ref:', canvasRef.current)
+    exportMindMapToPNG(canvasRef.current, `mindmap_${new Date().toISOString().split('T')[0]}.png`)
   }
 
   return (
     <div className={styles.container}>
-      <Toolbar mindMap={mindMap} user={user} onLogout={onLogout} />
+      <Toolbar 
+        mindMap={mindMap} 
+        user={user} 
+        onLogout={onLogout}
+        onExportPNG={handleExportPNG}
+      />
+      
       <div className={styles.main}>
-        <Canvas mindMap={mindMap} />
-
-        <ExportCanvas 
-          nodes={mindMap.nodes} 
-          connections={mindMap.connections} 
-          onRender={(canvas) => {
-            console.log('Canvas rendered:', canvas.width, canvas.height, 'nodes:', mindMap.nodes.length)
-            setExportCanvas(canvas)
-          }}
-        />
-
-        {/* Миникарта слева выше статус бара */}
+        {/* Контейнер для захвата */}
+        <div ref={canvasRef} className={styles.canvasContainer}>
+          <Canvas mindMap={mindMap} />
+        </div>
+        
+        {/* Миникарта слева выше */}
         <div className={styles.minimapWrapper}>
           <MiniMap 
             nodes={mindMap.nodes}
@@ -95,7 +88,7 @@ const MindMap = ({ user, onLogout }) => {
           </div>
         </div>
 
-        {/* Панель свойств для узла ИЛИ связи */}
+        {/* Панель свойств */}
         {(mindMap.selectedNodes.length > 0 || mindMap.selectedConnection) && (
           <PropertiesPanel 
             selectedNodes={mindMap.selectedNodes}
@@ -112,7 +105,7 @@ const MindMap = ({ user, onLogout }) => {
           />
         )}
         
-        {/* Подсказки справа на уровне статус бара */}
+        {/* Подсказки справа */}
         <div className={styles.helpWrapper}>
           <button 
             className={styles.helpToggle}
