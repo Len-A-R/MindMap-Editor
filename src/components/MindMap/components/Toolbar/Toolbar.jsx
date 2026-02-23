@@ -1,10 +1,13 @@
-import React from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Icon } from '@components/common/Icon.jsx'
 import { Button } from '@components/common/Button.jsx'
-import { saveToFile, loadFromFile, exportMindMapToPNG } from '@utils/fileUtils.js'
+import { saveToFile, loadFromFile } from '@utils/fileUtils.js'
 import styles from './Toolbar.module.css'
 
 const Toolbar = ({ mindMap, user, onLogout, onExportPNG }) => {
+  const [fileMenuOpen, setFileMenuOpen] = useState(false)
+  const menuRef = useRef(null)
+
   const {
     selectedNodes,
     addChildNode,
@@ -28,6 +31,17 @@ const Toolbar = ({ mindMap, user, onLogout, onExportPNG }) => {
     selectedConnection,
     deleteConnection
   } = mindMap
+
+  // Закрываем меню при клике вне
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setFileMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const handleAddChild = () => {
     if (selectedNodes.length === 1) {
@@ -70,6 +84,7 @@ const Toolbar = ({ mindMap, user, onLogout, onExportPNG }) => {
       user: user.username
     }
     saveToFile(data, `mindmap_${user.username}_${new Date().toISOString().split('T')[0]}.json`)
+    setFileMenuOpen(false)
   }
 
   const handleLoad = () => {
@@ -81,6 +96,12 @@ const Toolbar = ({ mindMap, user, onLogout, onExportPNG }) => {
       if (data.nodes) setNodes(data.nodes)
       if (data.connections) setConnections(data.connections)
     })
+    setFileMenuOpen(false)
+  }
+
+  const handleExport = () => {
+    onExportPNG()
+    setFileMenuOpen(false)
   }
 
   const zoomIn = () => setScale(s => Math.min(s * 1.2, 3))
@@ -116,9 +137,9 @@ const Toolbar = ({ mindMap, user, onLogout, onExportPNG }) => {
       <div className={styles.left}>
         <div className={styles.logo}>
           <div className={styles.logoIcon}>
-            <Icon name="Network" size={20} className="text-white" />
+            <Icon name="Network" size={20} />
           </div>
-          <span className={styles.logoText}>MindMap Editor</span>
+          <span className={styles.logoText}>MindMap Pro</span>
         </div>
 
         <div className={styles.divider} />
@@ -192,17 +213,39 @@ const Toolbar = ({ mindMap, user, onLogout, onExportPNG }) => {
 
         <div className={styles.divider} />
 
-        <Button icon="Download" onClick={handleSave} variant="primary">
-          Сохранить
-        </Button>
-        
-        <Button icon="Upload" onClick={handleLoad}>
-          Загрузить
-        </Button>
-
-        <Button icon="Image" onClick={onExportPNG} variant="primary">
-          PNG
-        </Button>
+        {/* Меню файлов */}
+        <div className={styles.fileMenuWrapper} ref={menuRef}>
+          <Button 
+            icon="Folder" 
+            onClick={() => setFileMenuOpen(!fileMenuOpen)}
+            variant={fileMenuOpen ? 'active' : 'default'}
+          >
+            Файл
+          </Button>
+          
+          {fileMenuOpen && (
+            <div className={styles.fileMenu}>
+              <button onClick={handleSave} className={styles.menuItem}>
+                <Icon name="Download" size={16} />
+                <span>Сохранить</span>
+                <kbd>Ctrl+S</kbd>
+              </button>
+              
+              <button onClick={handleLoad} className={styles.menuItem}>
+                <Icon name="Upload" size={16} />
+                <span>Загрузить</span>
+                <kbd>Ctrl+O</kbd>
+              </button>
+              
+              <div className={styles.menuDivider} />
+              
+              <button onClick={handleExport} className={styles.menuItem}>
+                <Icon name="Image" size={16} />
+                <span>Экспорт PNG</span>
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className={styles.divider} />
 
