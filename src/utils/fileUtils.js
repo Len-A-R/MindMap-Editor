@@ -33,22 +33,48 @@ export const loadFromFile = (callback) => {
   input.click()
 }
 
-export const exportAsImage = (canvasElement, filename) => {
-  // Convert SVG to canvas and download as PNG
-  const svgData = new XMLSerializer().serializeToString(canvasElement)
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
-  const img = new Image()
-  
-  img.onload = () => {
-    canvas.width = img.width
-    canvas.height = img.height
-    ctx.drawImage(img, 0, 0)
-    const a = document.createElement('a')
-    a.download = filename || 'mindmap.png'
-    a.href = canvas.toDataURL('image/png')
-    a.click()
+// экспорт в PNG
+export const exportToPNG = async (svgElement, filename) => {
+  if (!svgElement) {
+    console.error('SVG element not found')
+    return
   }
-  
-  img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)))
+
+  // Получаем размеры SVG
+  const svgRect = svgElement.getBoundingClientRect()
+  const width = Math.max(svgRect.width, 100)
+  const height = Math.max(svgRect.height, 100)
+
+  // Создаём canvas
+  const canvas = document.createElement('canvas')
+  canvas.width = width * 2 // Увеличиваем разрешение
+  canvas.height = height * 2
+  const ctx = canvas.getContext('2d')
+  ctx.scale(2, 2)
+
+  // Заливаем фон
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(0, 0, width, height)
+
+  // Получаем SVG как строку
+  const svgData = new XMLSerializer().serializeToString(svgElement)
+  const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+  const url = URL.createObjectURL(svgBlob)
+
+  // Рисуем SVG на canvas
+  const img = new Image()
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0, width, height)
+    URL.revokeObjectURL(url)
+
+    // Скачиваем PNG
+    const pngUrl = canvas.toDataURL('image/png')
+    const a = document.createElement('a')
+    a.href = pngUrl
+    a.download = filename || `mindmap_${new Date().toISOString().split('T')[0]}.png`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+  }
+  img.src = url
 }

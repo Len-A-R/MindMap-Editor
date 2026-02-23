@@ -1,14 +1,13 @@
 import React from 'react'
 import { Button } from '@components/common/Button'
 import { Icon } from '@components/common/Icon'
-import { saveToFile, loadFromFile } from '@utils/fileUtils'
+import { saveToFile, loadFromFile, exportToPNG } from '@utils/fileUtils'
 import styles from './Toolbar.module.css'
 
 const Toolbar = ({ mindMap, user, onLogout }) => {
   const {
     selectedNodes,
     addChildNode,
-    addNode,
     deleteSelectedNodes,
     toggleDetached,
     isConnecting,
@@ -18,14 +17,16 @@ const Toolbar = ({ mindMap, user, onLogout }) => {
     setScale,
     offset,
     setOffset,
+    nodes,
+    connections,
+    setNodes,
+    setConnections,
     canUndo,
     canRedo,
     undo,
     redo,
-    nodes,
-    connections,
-    setNodes,
-    setConnections
+    selectedConnection,
+    deleteConnection
   } = mindMap
 
   const handleAddChild = () => {
@@ -40,10 +41,16 @@ const Toolbar = ({ mindMap, user, onLogout }) => {
       if (selected && selected.parentId) {
         addChildNode(selected.parentId)
       } else {
-        addNode()
+        addChildNode(selectedNodes[0])
       }
+    }
+  }
+
+  const handleDelete = () => {
+    if (selectedConnection) {
+      deleteConnection(selectedConnection)
     } else {
-      addNode()
+      deleteSelectedNodes()
     }
   }
 
@@ -76,8 +83,20 @@ const Toolbar = ({ mindMap, user, onLogout }) => {
     })
   }
 
+  // Новая функция экспорта в PNG
+  const handleExportPNG = async () => {
+    // Находим SVG элемент в Canvas
+    const svgElement = document.querySelector('[class*="svg"]')
+    if (!svgElement) {
+      alert('Не удалось найти карту для экспорта')
+      return
+    }
+    await exportToPNG(svgElement, `mindmap_${new Date().toISOString().split('T')[0]}.png`)
+  }
+
   const zoomIn = () => setScale(s => Math.min(s * 1.2, 3))
   const zoomOut = () => setScale(s => Math.max(s / 1.2, 0.3))
+  
   const resetView = () => {
     setScale(1)
     setOffset({ x: 0, y: 0 })
@@ -120,7 +139,7 @@ const Toolbar = ({ mindMap, user, onLogout }) => {
             icon="Plus"
             onClick={handleAddChild}
             disabled={selectedNodes.length !== 1}
-            title="Добавить дочерний узел (выберите родителя)"
+            title="Добавить дочерний узел"
             variant={selectedNodes.length === 1 ? 'default' : 'ghost'}
           />
           
@@ -132,10 +151,10 @@ const Toolbar = ({ mindMap, user, onLogout }) => {
           
           <Button
             icon="Trash2"
-            onClick={deleteSelectedNodes}
-            disabled={selectedNodes.length === 0}
+            onClick={handleDelete}
+            disabled={selectedNodes.length === 0 && !selectedConnection}
             variant="danger"
-            title="Удалить выбранные (Delete)"
+            title="Удалить выбранное"
           />
 
           <div className={styles.divider} />
@@ -152,7 +171,7 @@ const Toolbar = ({ mindMap, user, onLogout }) => {
             icon="Unlink"
             onClick={() => selectedNodes.length === 1 && toggleDetached(selectedNodes[0])}
             disabled={selectedNodes.length !== 1}
-            title="Открепить/прикрепить узел от родителя"
+            title="Открепить/прикрепить узел"
           />
 
           <div className={styles.divider} />
@@ -161,14 +180,14 @@ const Toolbar = ({ mindMap, user, onLogout }) => {
             icon="Undo2"
             onClick={undo}
             disabled={!canUndo}
-            title="Отменить (Ctrl+Z)"
+            title="Отменить"
           />
           
           <Button
             icon="Redo2"
             onClick={redo}
             disabled={!canRedo}
-            title="Повторить (Ctrl+Shift+Z)"
+            title="Повторить"
           />
         </div>
       </div>
@@ -190,6 +209,11 @@ const Toolbar = ({ mindMap, user, onLogout }) => {
         
         <Button icon="Upload" onClick={handleLoad}>
           Загрузить
+        </Button>
+
+        {/* Кнопка экспорта в PNG */}
+        <Button icon="Image" onClick={handleExportPNG} variant="primary">
+          PNG
         </Button>
 
         <div className={styles.divider} />

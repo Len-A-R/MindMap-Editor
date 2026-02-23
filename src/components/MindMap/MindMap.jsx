@@ -6,18 +6,39 @@ import PropertiesPanel from './components/PropertiesPanel/PropertiesPanel.jsx'
 import MiniMap from './components/MiniMap/MiniMap.jsx'
 import { Icon } from '@components/common/Icon.jsx'
 import styles from './MindMap.module.css'
+import ExportCanvas from './components/ExportCanvas/ExportCanvas.jsx'
 import Connections from './components/Connections/Connections.jsx'
 
 const MindMap = ({ user, onLogout }) => {
   const mindMap = useMindMap(user)
   const [showHelp, setShowHelp] = useState(true)
+  const [exportCanvas, setExportCanvas] = useState(null)
+  
+  const handleExportPNG  = () => {
+    if (!exportCanvas) {
+      alert('Карта ещё не готова для экспорта')
+      return
+    }
+    const link = document.createElement('a')
+    link.download =`mindmap_${new Date().toISOString().split('T')[0]}.png`
+    link.href = exportCanvas.toDataURL()
+    link.click()
+  }
 
   return (
     <div className={styles.container}>
       <Toolbar mindMap={mindMap} user={user} onLogout={onLogout} />
-      
       <div className={styles.main}>
         <Canvas mindMap={mindMap} />
+
+        <ExportCanvas 
+          nodes={mindMap.nodes} 
+          connections={mindMap.connections} 
+          onRender={(canvas) => {
+            console.log('Canvas rendered:', canvas.width, canvas.height, 'nodes:', mindMap.nodes.length)
+            setExportCanvas(canvas)
+          }}
+        />
 
         {/* Миникарта слева выше статус бара */}
         <div className={styles.minimapWrapper}>
