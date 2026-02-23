@@ -1,0 +1,20 @@
+.canvas {
+  @apply absolute inset-0 cursor-grab;
+  background-color: #0f172a;
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+
+.canvas.panning {
+  @apply cursor-grabbing;
+}
+
+.canvas.dragging {
+  @apply cursor-move;
+}
+
+.viewport {
+  @apply absolute inset-0;
+  will-change: transform;
+}

@@ -1,0 +1,43 @@
+.header {
+  @apply glass-panel border-b border-slate-700 px-4 py-3 flex items-center justify-between z-50;
+}
+
+.left {
+  @apply flex items-center gap-4;
+}
+
+.logo {
+  @apply flex items-center gap-2;
+}
+
+.logoIcon {
+  @apply w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center;
+}
+
+.logoText {
+  @apply text-white font-semibold;
+}
+
+.divider {
+  @apply h-6 w-px bg-slate-700;
+}
+
+.tools {
+  @apply flex items-center gap-1;
+}
+
+.right {
+  @apply flex items-center gap-3;
+}
+
+.zoom {
+  @apply flex items-center gap-1 bg-slate-800/50 rounded-lg p-1;
+}
+
+.zoomValue {
+  @apply text-slate-400 text-sm w-12 text-center font-mono;
+}
+
+.user {
+  @apply flex items-center gap-2 text-slate-300 text-sm;
+}

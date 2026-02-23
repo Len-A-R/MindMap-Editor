@@ -1,0 +1,68 @@
+.container {
+  @apply h-screen w-screen bg-slate-900 flex flex-col overflow-hidden;
+}
+
+.main {
+  @apply flex-1 relative overflow-hidden;
+}
+
+/* Миникарта слева выше */
+.minimapWrapper {
+  @apply absolute left-4 z-30;
+  bottom: 60px; /* Выше статус бара */
+}
+
+/* Статус бар слева внизу */
+.statusBarWrapper {
+  @apply absolute bottom-4 left-4 z-30;
+}
+
+.statusBarCompact {
+  @apply glass-panel rounded-lg px-2 py-1.5 flex items-center gap-2 text-slate-400 text-xs w-fit;
+}
+
+.statusItem {
+  @apply flex items-center gap-1;
+}
+
+.statusItem.pulse {
+  @apply text-blue-400 animate-pulse;
+}
+
+.statusItem.editing {
+  @apply text-green-400;
+}
+
+.divider {
+  @apply w-px h-3 bg-slate-600;
+}
+
+/* Панель свойств справа */
+.propertiesWrapper {
+  @apply absolute right-2 top-16 bottom-4 z-40;
+}
+
+/* Подсказки справа на уровне статус бара */
+.helpWrapper {
+  @apply absolute bottom-4 right-4 flex items-end gap-2 z-30;
+}
+
+.helpToggle {
+  @apply p-2 glass-panel rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all;
+}
+
+.help {
+  @apply glass-panel rounded-lg px-3 py-2 text-slate-400 text-xs;
+}
+
+.helpTitle {
+  @apply font-semibold text-white mb-1.5 flex items-center gap-1;
+}
+
+.help kbd {
+  @apply bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 font-mono text-[10px] border border-slate-700;
+}
+
+.help p {
+  @apply leading-relaxed;
+}
