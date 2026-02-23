@@ -390,7 +390,8 @@ const deleteSelectedNodes = useCallback(() => {
       id: generateId(),
       from: fromId,
       to: toId,
-      style: { color: '#f59e0b', width: 2, dashed: true }
+      text: '',
+      style: { color: '#f59e0b', dashed: true }
     }
     
     pushState({
@@ -399,11 +400,31 @@ const deleteSelectedNodes = useCallback(() => {
     })
   }, [state, pushState])
 
+  const updateConnection = useCallback((connectionId, updates) => {
+    const newConnections = state.connections.map(c => {
+      if (c.id !== connectionId) return c
+      
+      // Обрабатываем вложенные обновления style
+      if (updates.style && c.style) {
+        return { 
+          ...c, 
+          ...updates,
+          style: { ...c.style, ...updates.style }
+        }
+      }
+      
+      return { ...c, ...updates }
+    })
+    
+    pushState({ ...state, connections: newConnections })
+  }, [state, pushState])
+
   const removeConnection = useCallback((connectionId) => {
     pushState({
       ...state,
       connections: state.connections.filter(c => c.id !== connectionId)
     })
+    setSelectedConnection(null)
   }, [state, pushState])
 
   const copySelected = useCallback(() => {
@@ -480,14 +501,6 @@ const deleteSelectedNodes = useCallback(() => {
     setSelectedConnection(null)
   }, [state, pushState])
 
-  // ... функция обновления связи (текст, стиль)
-  const updateConnection = useCallback((connectionId, updates) => {
-    const newConnections = state.connections.map(c => 
-      c.id === connectionId ? { ...c, ...updates } : c
-    )
-    pushState({ ...state, connections: newConnections })
-  }, [state, pushState])
-
   const currentNodes = dragNodes || state.nodes
 
   return {
@@ -517,6 +530,7 @@ const deleteSelectedNodes = useCallback(() => {
     endDrag,
     toggleDetached,
     addConnection,
+    updateConnection,
     removeConnection,
     copySelected,
     pasteClipboard,

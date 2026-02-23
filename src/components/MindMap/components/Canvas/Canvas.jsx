@@ -38,6 +38,34 @@ const Canvas = ({ mindMap }) => {
   const [isDragging, setIsDragging] = React.useState(false)
   const [draggedNodeId, setDraggedNodeId] = React.useState(null)
 
+  const calculateConnectionPoints = (fromNode, toNode) => {
+    const fromCenterX = fromNode.x + fromNode.width / 2;
+    const fromCenterY = fromNode.y + fromNode.height / 2;
+    const toCenterX = toNode.x + toNode.width / 2;
+    const toCenterY = toNode.y + toNode.height / 2;
+
+    // Определяем направление соединения
+    const dx = toCenterX - fromCenterX;
+    const dy = toCenterY - fromCenterY;
+    let x1, y1, x2, y2;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    // Горизонтальное направление
+    x1 = dx > 0 ? fromNode.x + fromNode.width : fromNode.x;
+    y1 = fromCenterY;
+    x2 = dx > 0 ? toNode.x : toNode.x + toNode.width;
+    y2 = toCenterY;
+  } else {
+    // Вертикальное направление
+    x1 = fromCenterX;
+    y1 = dy > 0 ? fromNode.y + fromNode.height : fromNode.y;
+    x2 = toCenterX;
+    y2 = dy > 0 ? toNode.y : toNode.y + toNode.height;
+  }
+
+  return { x1, y1, x2, y2 };
+};
+
   // Проверяем, что клик был на пустой области канвы (не на узле)
   const isClickOnEmptyCanvas = (e) => {
     // Проверяем, что target - это сам canvas или его не-интерактивные дочерние элементы
@@ -164,10 +192,12 @@ const Canvas = ({ mindMap }) => {
         }}
       >
         <Connections 
-          nodes={nodes} 
-          connections={connections} 
-          isConnecting={isConnecting}
-          connectStart={connectStart}
+          nodes={mindMap.nodes} 
+          connections={mindMap.connections} 
+          selectedConnection={mindMap.selectedConnection}
+          onSelectConnection={mindMap.setSelectedConnection}
+          isConnecting={mindMap.isConnecting}
+          connectStart={mindMap.connectStart}
         />
         
         {nodes.map(node => (

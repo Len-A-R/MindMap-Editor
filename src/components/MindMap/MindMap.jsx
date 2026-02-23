@@ -74,15 +74,6 @@ const MindMap = ({ user, onLogout }) => {
           </div>
         </div>
 
-        <Connections 
-          nodes={mindMap.nodes} 
-          connections={mindMap.connections} 
-          selectedConnection={mindMap.selectedConnection}
-          onSelectConnection={mindMap.setSelectedConnection}
-          isConnecting={mindMap.isConnecting}
-          connectStart={mindMap.connectStart}
-        />
-        
         {/* Панель свойств для узла ИЛИ связи */}
         {(mindMap.selectedNodes.length > 0 || mindMap.selectedConnection) && (
           <PropertiesPanel 

@@ -5,9 +5,7 @@ const Connections = ({
   nodes, 
   connections, 
   selectedConnection,
-  onSelectConnection,
-  isConnecting, 
-  connectStart 
+  onSelectConnection
 }) => {
   const getNodeCenter = (node) => ({
     x: node?.x || 0,
@@ -41,7 +39,7 @@ const Connections = ({
 
   return (
     <svg className={styles.svg}>
-      {/* Parent-child связи */}
+      {/* Только parent-child связи - НЕ интерактивные */}
       {nodes.map(node => {
         if (!node.parentId) return null
         const parent = nodes.find(n => n.id === node.parentId)
@@ -56,11 +54,12 @@ const Connections = ({
             d={getBezierPath(start.x, start.y, end.x, end.y)}
             className={styles.parentConnection}
             fill="none"
+            pointerEvents="none"
           />
         )
       })}
 
-      {/* Пользовательские связи */}
+      {/* Пользовательские связи - интерактивные */}
       {connections.map(conn => {
         const from = nodes.find(n => n.id === conn.from)
         const to = nodes.find(n => n.id === conn.to)
@@ -93,28 +92,33 @@ const Connections = ({
               d={getBezierPath(start.x, start.y, end.x, end.y)}
               className={styles.customConnection}
               fill="none"
+              stroke={conn.style?.color || '#f59e0b'}
               strokeDasharray={conn.style?.dashed !== false ? "5,5" : "none"}
             />
             
             {/* Маркеры */}
-            <circle cx={start.x} cy={start.y} r="4" className={styles.connectionPoint} />
-            <circle cx={end.x} cy={end.y} r="4" className={styles.connectionPoint} />
+            <circle cx={start.x} cy={start.y} r="4" fill={conn.style?.color || '#f59e0b'} />
+            <circle cx={end.x} cy={end.y} r="4" fill={conn.style?.color || '#f59e0b'} />
             
             {/* Текст связи */}
             {conn.text && (
-              <g className={styles.connectionLabel} transform={`translate(${midPoint.x}, ${midPoint.y})`}>
+              <g transform={`translate(${midPoint.x}, ${midPoint.y})`}>
                 <rect
                   x="-40"
                   y="-10"
                   width="80"
                   height="20"
                   rx="4"
-                  className={styles.labelBg}
+                  fill="rgba(15, 23, 42, 0.9)"
+                  stroke={conn.style?.color || '#f59e0b'}
+                  strokeWidth="1"
                 />
                 <text
                   y="4"
                   textAnchor="middle"
-                  className={styles.labelText}
+                  fill={conn.style?.color || '#f59e0b'}
+                  fontSize="12"
+                  fontFamily="Inter, sans-serif"
                 >
                   {conn.text}
                 </text>
@@ -127,7 +131,9 @@ const Connections = ({
                 cx={midPoint.x}
                 cy={midPoint.y}
                 r="6"
-                className={styles.selectionIndicator}
+                fill="#ef4444"
+                stroke="#fff"
+                strokeWidth="2"
               />
             )}
           </g>
