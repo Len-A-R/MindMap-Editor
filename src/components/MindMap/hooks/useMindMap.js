@@ -279,31 +279,31 @@ export const useMindMap = (user) => {
     pushState({ ...state, nodes: newNodes })
   }, [state, pushState])
 
-const deleteSelectedNodes = useCallback(() => {
-  if (selectedNodes.length === 0) return
-  
-  const idsToDelete = new Set(selectedNodes)
-  const rootNode = state.nodes.find(n => !n.parentId)
-  
-  let shouldBreak = false
-  for (const id of selectedNodes) {
-    if (id === rootNode?.id) {
-      shouldBreak = true
-      break // Прерываем for...of, не forEach!
+  const deleteSelectedNodes = useCallback(() => {
+    if (selectedNodes.length === 0) return
+    
+    const idsToDelete = new Set(selectedNodes)
+    const rootNode = state.nodes.find(n => !n.parentId)
+    
+    let shouldBreak = false
+    for (const id of selectedNodes) {
+      if (id === rootNode?.id) {
+        shouldBreak = true
+        break // Прерываем for...of, не forEach!
+      }
+      getDescendants(state.nodes, id).forEach(descId => idsToDelete.add(descId))
     }
-    getDescendants(state.nodes, id).forEach(descId => idsToDelete.add(descId))
-  }
-  
-  if (shouldBreak) return // Выходим из функции
+    
+    if (shouldBreak) return // Выходим из функции
 
-  const newNodes = state.nodes.filter(n => !idsToDelete.has(n.id))
-  const newConnections = state.connections.filter(c => 
-    !idsToDelete.has(c.from) && !idsToDelete.has(c.to)
-  )
-  
-  pushState({ nodes: newNodes, connections: newConnections })
-  setSelectedNodes([])
-}, [selectedNodes, state, pushState])
+    const newNodes = state.nodes.filter(n => !idsToDelete.has(n.id))
+    const newConnections = state.connections.filter(c => 
+      !idsToDelete.has(c.from) && !idsToDelete.has(c.to)
+    )
+    
+    pushState({ nodes: newNodes, connections: newConnections })
+    setSelectedNodes([])
+  }, [selectedNodes, state, pushState])
 
   const startDrag = useCallback((nodeId, mouseX, mouseY) => {
     const node = state.nodes.find(n => n.id === nodeId)
@@ -419,7 +419,7 @@ const deleteSelectedNodes = useCallback(() => {
     pushState({ ...state, connections: newConnections })
   }, [state, pushState])
 
-  const removeConnection = useCallback((connectionId) => {
+  const deleteConnection = useCallback((connectionId) => {
     pushState({
       ...state,
       connections: state.connections.filter(c => c.id !== connectionId)
@@ -492,15 +492,6 @@ const deleteSelectedNodes = useCallback(() => {
     pushState({ ...state, connections: newConnections })
   }, [state, pushState])
 
-    // ... функция удаления связи
-  const deleteConnection = useCallback((connectionId) => {
-    pushState({
-      ...state,
-      connections: state.connections.filter(c => c.id !== connectionId)
-    })
-    setSelectedConnection(null)
-  }, [state, pushState])
-
   const currentNodes = dragNodes || state.nodes
 
   return {
@@ -531,7 +522,7 @@ const deleteSelectedNodes = useCallback(() => {
     toggleDetached,
     addConnection,
     updateConnection,
-    removeConnection,
+    deleteConnection,
     copySelected,
     pasteClipboard,
     cutSelected,
