@@ -153,7 +153,7 @@ const Toolbar = ({ mindMap, user, onLogout, onExportPNG, onOpenCatalog, onSaveMa
           <div className={styles.logoIcon}>
             <Icon name="Network" size={20} />
           </div>
-          <span className={styles.logoText}>MindMap Pro</span>
+          <span className={styles.logoText}>MindMap Editor</span>
         </div>
 
         <div className={styles.divider} />
