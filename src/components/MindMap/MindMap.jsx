@@ -40,6 +40,43 @@ const MindMap = ({ user, onLogout }) => {
     }
   }, [saveSuccess])
 
+  // Зум по колёсику мыши
+  useEffect(() => {
+    const container = canvasRef.current;
+    if (!container) return;
+
+    const handleWheel = (e) => {
+      e.preventDefault(); // Отключаем прокрутку страницы
+
+      // Коэффициент зума: положительный deltaY (крутим вниз) — уменьшаем, отрицательный (вверх) — увеличиваем
+      const delta = -Math.sign(e.deltaY) * 0.1;
+      const currentScale = mindMap.scale;
+      const newScale = Math.min(Math.max(currentScale * (1 + delta), 0.1), 5); // Ограничиваем масштаб от 0.1 до 5
+
+      if (newScale === currentScale) return; // Если масштаб не изменился, ничего не делаем
+
+      // Координаты мыши относительно контейнера
+      const rect = container.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      // Мировые координаты точки под мышью до зума
+      const worldX = (mouseX - mindMap.offset.x) / currentScale;
+      const worldY = (mouseY - mindMap.offset.y) / currentScale;
+
+      // Новый offset, чтобы точка под мышью осталась на месте
+      const newOffsetX = mouseX - worldX * newScale;
+      const newOffsetY = mouseY - worldY * newScale;
+
+      // Применяем изменения
+      mindMap.setScale(newScale);
+      mindMap.setOffset({ x: newOffsetX, y: newOffsetY });
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [mindMap]); // Зависимость от mindMap (объект стабилен)  
+
   const handleExportPNG = () => {
     exportMindMapToPNG(canvasRef.current, `mindmap_${new Date().toISOString().split('T')[0]}.png`)
   }
