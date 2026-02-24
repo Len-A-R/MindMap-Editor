@@ -260,13 +260,40 @@ const MiniMap = ({ nodes, connections, scale, offset, onNavigate }) => {
         })}
         
         {/* Viewport */}
-        <rect
-          x={toMapX(viewX)}
-          y={toMapY(viewY)}
-          width={Math.min(viewW * mapScale, mapWidth)}
-          height={Math.min(viewH * mapScale, mapHeight)}
-          className={styles.viewport}
-        />
+        {(() => {
+          // Вычисляем координаты и размеры прямоугольника в координатах миникарты
+          let vx = toMapX(viewX);
+          let vy = toMapY(viewY);
+          let vw = viewW * mapScale;
+          let vh = viewH * mapScale;
+
+          // Ограничиваем позицию, чтобы прямоугольник не выходил за левую/верхнюю границу
+          let x = Math.max(0, vx);
+          let y = Math.max(0, vy);
+
+          // Если после ограничения позиции прямоугольник выходит за правую/нижнюю границу,
+          // уменьшаем его размер
+          if (x + vw > mapWidth) {
+            vw = mapWidth - x;
+          }
+          if (y + vh > mapHeight) {
+            vh = mapHeight - y;
+          }
+
+          // Финальные значения (размер не может быть отрицательным)
+          const width = Math.max(0, vw);
+          const height = Math.max(0, vh);
+
+          return (
+            <rect
+              x={x}
+              y={y}
+              width={width}
+              height={height}
+              className={styles.viewport}
+            />
+          );
+        })()}
       </svg>
     </div>
   )
