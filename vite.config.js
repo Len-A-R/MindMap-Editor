@@ -4,6 +4,7 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  base: '/MindMap-Editor/', 
   resolve: {
     extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx', '.json'],
     alias: {
