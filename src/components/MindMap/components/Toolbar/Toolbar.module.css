@@ -1,0 +1,114 @@
+.header {
+  @apply glass-panel border-b border-slate-700 px-4 py-3 flex items-center justify-between z-50;
+}
+
+.left {
+  @apply flex items-center gap-4;
+}
+
+.logo {
+  @apply flex items-center gap-2;
+}
+
+.logoIcon {
+  @apply w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center;
+}
+
+.logoText {
+  @apply text-white font-semibold;
+}
+
+.divider {
+  @apply h-6 w-px bg-slate-700;
+}
+
+.tools {
+  @apply flex items-center gap-1;
+}
+
+.right {
+  @apply flex items-center gap-3;
+}
+
+.zoom {
+  @apply flex items-center gap-1 bg-slate-800/50 rounded-lg p-1;
+}
+
+.zoomValue {
+  @apply text-slate-400 text-sm w-12 text-center font-mono;
+}
+
+.user {
+  @apply flex items-center gap-2 text-slate-300 text-sm;
+}
+
+.fileMenuWrapper {
+  position: relative; /* Важно для позиционирования меню */
+  display: inline-block;
+}
+
+.fileMenu {
+  position: absolute;
+  top: 100%; /* Сразу под кнопкой */
+  left: 0; /* Выравнивание по левому краю кнопки */
+  margin-top: 4px; /* Небольшой отступ от кнопки */
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 8px 0;
+  min-width: 220px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  color: #f1f5f9;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-align: left;
+}
+
+.menuItem:hover {
+  background: #334155;
+}
+
+.menuItem kbd {
+  margin-left: auto;
+  padding: 2px 6px;
+  background: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #94a3b8;
+  font-family: monospace;
+}
+
+.menuDivider {
+  height: 1px;
+  background: #334155;
+  margin: 8px 0;
+}
+
+.menuItem span {
+  @apply flex-1 text-sm;
+}

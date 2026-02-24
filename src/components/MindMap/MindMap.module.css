@@ -1,0 +1,144 @@
+.container {
+  @apply h-screen w-screen bg-slate-900 flex flex-col overflow-hidden;
+}
+
+.main {
+  @apply flex-1 relative overflow-hidden;
+}
+
+/* Контейнер для захвата PNG */
+.canvasContainer {
+  @apply absolute inset-0;
+  background-color: #0f172a;
+}
+
+/* Остальные стили без изменений */
+.minimapWrapper {
+  @apply absolute left-4 z-30;
+  bottom: 80px;
+}
+
+.statusBarWrapper {
+  @apply absolute bottom-4 left-4 z-30;
+}
+
+.statusBarCompact {
+  @apply glass-panel rounded-lg px-2 py-1.5 flex items-center gap-2 text-slate-400 text-xs w-fit;
+}
+
+.statusItem {
+  @apply flex items-center gap-1;
+}
+
+.statusItem.pulse {
+  @apply text-blue-400 animate-pulse;
+}
+
+.statusItem.editing {
+  @apply text-green-400;
+}
+
+.divider {
+  @apply w-px h-3 bg-slate-600;
+}
+
+.helpWrapper {
+  @apply absolute bottom-4 right-4 flex items-end gap-2 z-30;
+}
+
+.helpToggle {
+  @apply p-2 glass-panel rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all;
+}
+
+.help {
+  @apply glass-panel rounded-lg px-3 py-2 text-slate-400 text-xs;
+}
+
+.helpTitle {
+  @apply font-semibold text-white mb-1.5 flex items-center gap-1;
+}
+
+.help kbd {
+  @apply bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 font-mono text-[10px] border border-slate-700;
+}
+
+.help p {
+  @apply leading-relaxed;
+}
+
+.mapName {
+  max-width: 150px;
+}
+
+.mapName span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: #0f172a;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  color: #3b82f6;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.mapName {
+  max-width: 120px;
+}
+
+.mapName span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  max-width: 100px;
+}
+
+.successToast {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background: #10b981;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+  z-index: 10000;
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
