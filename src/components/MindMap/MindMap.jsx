@@ -1,9 +1,11 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useMindMap } from './hooks/useMindMap.js'
 import Canvas from './components/Canvas/Canvas.jsx'
 import Toolbar from './components/Toolbar/Toolbar.jsx'
 import PropertiesPanel from './components/PropertiesPanel/PropertiesPanel.jsx'
 import MiniMap from './components/MiniMap/MiniMap.jsx'
+import MapCatalog from './components/MapCatalog/MapCatalog.jsx'
+import SaveDialog from './components/SaveDialog/SaveDialog.jsx'
 import { exportMindMapToPNG } from '@utils/fileUtils.js'
 import { Icon } from '@components/common/Icon.jsx'
 import styles from './MindMap.module.css'
@@ -11,29 +13,136 @@ import styles from './MindMap.module.css'
 const MindMap = ({ user, onLogout }) => {
   const mindMap = useMindMap(user)
   const [showHelp, setShowHelp] = useState(true)
-  const canvasRef = useRef(null) // Ссылка на контейнер канвы
+  const [catalogOpen, setCatalogOpen] = useState(false)
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false) // Флаг успешного сохранения
+  const canvasRef = useRef(null)
+
+ // Обработка Ctrl+S
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's' && !e.shiftKey) {
+        e.preventDefault()
+        // Открываем диалог сохранения с новым именем
+        setSaveDialogOpen(true)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  // Автоматически скрывать сообщение об успехе через 2 секунды
+  useEffect(() => {
+    if (saveSuccess) {
+      const timer = setTimeout(() => setSaveSuccess(false), 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [saveSuccess])
 
   const handleExportPNG = () => {
-    console.log('Export clicked, ref:', canvasRef.current)
     exportMindMapToPNG(canvasRef.current, `mindmap_${new Date().toISOString().split('T')[0]}.png`)
+  }
+
+  // Сохранение с именем (Ctrl+S)
+  const handleSaveWithName = (name) => {
+    console.log('mindMap object:', mindMap)
+    console.log('createMapWithData:', mindMap.createMapWithData)
+    console.log('Available methods:', Object.keys(mindMap))
+    
+    if (!name || !name.trim()) {
+      alert('Введите название карты')
+      return
+    }
+
+    try {
+      // Создаем карту И СРАЗУ сохраняем текущие данные
+      const newId = mindMap.createMapWithData(name.trim(), mindMap.nodes, mindMap.connections)
+      
+      if (newId) {
+        console.log('Map saved successfully, id:', newId)
+        setSaveDialogOpen(false)
+        setSaveSuccess(true)
+      } else {
+        alert('Ошибка при создании карты')
+      }
+    } catch (error) {
+      console.error('Error saving map:', error)
+      alert('Ошибка сохранения: ' + error.message)
+    }
+  }
+
+  // Обработчик переключения карты
+  const handleSwitchMap = (id) => {
+    console.log('Switching to map:', id)
+    
+    // Сначала переключаем ID
+    mindMap.switchMap(id)
+    
+    // Затем загружаем данные
+    const success = mindMap.loadMap(id)
+    
+    if (success) {
+      setCatalogOpen(false)
+    } else {
+      alert('Ошибка загрузки карты')
+    }
+  }  
+
+  if (!mindMap.isLoaded) {
+    return (
+      <div className={styles.loading}>
+        <Icon name="Loader2" size={32} className={styles.spinner} />
+        <span>Загрузка...</span>
+      </div>
+    )
   }
 
   return (
     <div className={styles.container}>
+      {/* Уведомление об успешном сохранении */}
+      {saveSuccess && (
+        <div className={styles.successToast}>
+          <Icon name="CheckCircle" size={20} />
+          <span>Карта сохранена!</span>
+        </div>
+      )}
+
       <Toolbar 
         mindMap={mindMap} 
         user={user} 
         onLogout={onLogout}
         onExportPNG={handleExportPNG}
+        onOpenCatalog={() => setCatalogOpen(true)}
+        onSaveMap={() => setSaveDialogOpen(true)} // <-- Новый проп
       />
-      
+
+      {/* Диалог сохранения (Ctrl+S) */}
+      <SaveDialog
+        isOpen={saveDialogOpen}
+        onSave={handleSaveWithName}
+        onCancel={() => setSaveDialogOpen(false)}
+        defaultName={`Карта ${new Date().toLocaleDateString()}`}
+      />
+
+      {/* КАТАЛОГ ДОЛЖЕН БЫТЬ ЗДЕСЬ - на том же уровне, что и main, но с position: fixed */}
+      {catalogOpen && (
+        <MapCatalog
+          maps={mindMap.maps}
+          currentMapId={mindMap.currentMapId}
+          onSwitchMap={handleSwitchMap}
+          onCreateMap={mindMap.createMap}
+          onDeleteMap={mindMap.deleteMap}
+          onRenameMap={mindMap.renameMap}
+          onClose={() => setCatalogOpen(false)}
+        />
+      )}
+
       <div className={styles.main}>
-        {/* Контейнер для захвата */}
         <div ref={canvasRef} className={styles.canvasContainer}>
           <Canvas mindMap={mindMap} />
         </div>
         
-        {/* Миникарта слева выше */}
         <div className={styles.minimapWrapper}>
           <MiniMap 
             nodes={mindMap.nodes}
@@ -47,7 +156,6 @@ const MindMap = ({ user, onLogout }) => {
           />
         </div>
 
-        {/* Статус бар слева внизу */}
         <div className={styles.statusBarWrapper}>
           <div className={styles.statusBarCompact}>
             <div className={styles.statusItem}>
@@ -85,10 +193,16 @@ const MindMap = ({ user, onLogout }) => {
                 </div>
               </>
             )}
+            <div className={styles.divider} />
+            <div className={`${styles.statusItem} ${styles.mapName}`}>
+              <Icon name="Folder" size={12} />
+              <span title={mindMap.maps.find(m => m.id === mindMap.currentMapId)?.name}>
+                {mindMap.maps.find(m => m.id === mindMap.currentMapId)?.name || '...'}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Панель свойств */}
         {(mindMap.selectedNodes.length > 0 || mindMap.selectedConnection) && (
           <PropertiesPanel 
             selectedNodes={mindMap.selectedNodes}
@@ -105,7 +219,6 @@ const MindMap = ({ user, onLogout }) => {
           />
         )}
         
-        {/* Подсказки справа */}
         <div className={styles.helpWrapper}>
           <button 
             className={styles.helpToggle}
@@ -124,6 +237,7 @@ const MindMap = ({ user, onLogout }) => {
               <p><kbd>Delete</kbd> - Удалить</p>
               <p><kbd>←↑↓→</kbd> - Навигация</p>
               <p><kbd>Drag</kbd> - Перемещение</p>
+              <p><kbd>Ctrl+S</kbd> - Сохранить</p>
             </div>
           )}
         </div>

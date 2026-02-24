@@ -4,23 +4,41 @@ import { useHistory } from './useHistory.js'
 import { createNode, createRootNode, generateId } from '@utils/nodeUtils.js'
 import { getDescendants, flatToTree } from '@utils/treeUtils.js'
 import { defaultNodeStyle } from '@constants/defaultStyles.js'
+import { useMapCatalog } from './useMapCatalog.js'
 
 export const useMindMap = (user) => {
-  const { saveData, loadData } = useStorage(user.id)
-  
+  const { 
+    maps, 
+    currentMapId, 
+    isLoaded,
+    pendingSave,
+    createMap, 
+    createMapWithName, 
+    createMapWithData,
+    deleteMap, 
+    renameMap, 
+    loadMapData, 
+    saveMapData, 
+    switchMap,
+    requestSaveNewMap,
+    cancelPendingSave
+  } = useMapCatalog(user?.id)
+
+  // Ждем загрузки каталога
   const initialState = useCallback(() => {
-    const loaded = loadData()
+    if (!isLoaded || !currentMapId) {
+      return { nodes: [createRootNode()], connections: [] }
+    }
+    
+    const loaded = loadMapData(currentMapId)
     if (loaded && loaded.nodes.length > 0) {
       return {
         nodes: loaded.nodes,
         connections: loaded.connections || []
       }
     }
-    return {
-      nodes: [createRootNode()],
-      connections: []
-    }
-  }, [loadData])
+    return { nodes: [createRootNode()], connections: [] }
+  }, [currentMapId, isLoaded, loadMapData])
 
   const { 
     state, 
@@ -43,12 +61,11 @@ export const useMindMap = (user) => {
   const [selectedConnection, setSelectedConnection] = useState(null)
 
   // Auto-save
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      saveData(state.nodes, state.connections)
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [state, saveData])
+  // useEffect(() => {
+  //   if (currentMapId && isLoaded) {
+  //     saveMapData(currentMapId, state.nodes, state.connections)
+  //   }
+  // }, [state, currentMapId, isLoaded, saveMapData])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -75,6 +92,14 @@ export const useMindMap = (user) => {
         return
       } 
 
+      if ((e.ctrlKey || e.metaKey) && e.key === 's' && !e.shiftKey) {
+        e.preventDefault()
+        if (currentMapId) {
+          saveMapData(currentMapId, state.nodes, state.connections)
+          // Можно добавить визуальный фидбек
+          console.log('Сохранено в localStorage')
+        }
+      }      
       // Не в режиме редактирования
       if (e.key === 'Tab') {
         e.preventDefault()
@@ -492,7 +517,23 @@ export const useMindMap = (user) => {
     pushState({ ...state, connections: newConnections })
   }, [state, pushState])
 
+    // Функция для загрузки карты по ID
+  const loadMap = useCallback((mapId) => {
+    const data = loadMapData(mapId)
+    if (data) {
+      pushState({
+        nodes: data.nodes,
+        connections: data.connections || []
+      })
+      return true
+    }
+    return false
+  }, [loadMapData, pushState])
+
   const currentNodes = dragNodes || state.nodes
+
+  // Отладка перед return
+  console.log('Before return - createMapWithData:', createMapWithData)  
 
   return {
     nodes: currentNodes,
@@ -531,6 +572,23 @@ export const useMindMap = (user) => {
     setNodes,
     setConnections,
     selectedConnection,
-    setSelectedConnection    
+    setSelectedConnection,
+
+    // Поля из useMapCatalog
+    maps,
+    currentMapId,
+    isLoaded,
+    pendingSave,
+    createMap,
+    createMapWithName,
+    createMapWithData, // <-- Используем из деструктуризации
+    deleteMap,
+    renameMap,
+    switchMap, // <-- Только один раз!
+    loadMapData,
+    saveMapData,
+    loadMap,
+    requestSaveNewMap,
+    cancelPendingSave
   }
 }

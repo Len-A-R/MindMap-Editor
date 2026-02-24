@@ -43,18 +43,29 @@
 }
 
 .fileMenuWrapper {
-  @apply relative;
+  position: relative; /* Важно для позиционирования меню */
+  display: inline-block;
 }
 
 .fileMenu {
-  @apply absolute top-full right-0 mt-2 glass-panel rounded-lg py-2 min-w-[180px] z-50;
-  animation: slideDown 0.15s ease-out;
+  position: absolute;
+  top: 100%; /* Сразу под кнопкой */
+  left: 0; /* Выравнивание по левому краю кнопки */
+  margin-top: 4px; /* Небольшой отступ от кнопки */
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 8px 0;
+  min-width: 220px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeIn 0.15s ease;
 }
 
-@keyframes slideDown {
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-5px);
   }
   to {
     opacity: 1;
@@ -63,17 +74,41 @@
 }
 
 .menuItem {
-  @apply w-full flex items-center gap-3 px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors text-left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  color: #f1f5f9;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-align: left;
+}
+
+.menuItem:hover {
+  background: #334155;
+}
+
+.menuItem kbd {
+  margin-left: auto;
+  padding: 2px 6px;
+  background: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #94a3b8;
+  font-family: monospace;
+}
+
+.menuDivider {
+  height: 1px;
+  background: #334155;
+  margin: 8px 0;
 }
 
 .menuItem span {
   @apply flex-1 text-sm;
-}
-
-.menuItem kbd {
-  @apply text-xs text-slate-500 bg-slate-800 px-2 py-0.5 rounded;
-}
-
-.menuDivider {
-  @apply h-px bg-slate-700 my-2 mx-4;
 }

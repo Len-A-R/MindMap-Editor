@@ -4,7 +4,7 @@ import { Button } from '@components/common/Button.jsx'
 import { saveToFile, loadFromFile } from '@utils/fileUtils.js'
 import styles from './Toolbar.module.css'
 
-const Toolbar = ({ mindMap, user, onLogout, onExportPNG }) => {
+const Toolbar = ({ mindMap, user, onLogout, onExportPNG, onOpenCatalog, onSaveMap }) => {
   const [fileMenuOpen, setFileMenuOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -29,7 +29,8 @@ const Toolbar = ({ mindMap, user, onLogout, onExportPNG }) => {
     undo,
     redo,
     selectedConnection,
-    deleteConnection
+    deleteConnection,
+    maps
   } = mindMap
 
   // Закрываем меню при клике вне
@@ -75,7 +76,8 @@ const Toolbar = ({ mindMap, user, onLogout, onExportPNG }) => {
     }
   }
 
-  const handleSave = () => {
+  // Сохранить в файл (Ctrl+Shift+S)
+  const handleSaveToDisk = () => {
     const data = {
       version: '2.0',
       timestamp: new Date().toISOString(),
@@ -84,6 +86,18 @@ const Toolbar = ({ mindMap, user, onLogout, onExportPNG }) => {
       user: user.username
     }
     saveToFile(data, `mindmap_${user.username}_${new Date().toISOString().split('T')[0]}.json`)
+    setFileMenuOpen(false)
+  }
+
+  // Сохранить в localStorage (Ctrl+S)
+  const handleSaveToStorage = () => {
+    onSaveMap()
+    setFileMenuOpen(false)
+  }
+
+  // Открыть каталог карт (Ctrl+O)
+  const handleOpenCatalog = () => {
+    onOpenCatalog()
     setFileMenuOpen(false)
   }
 
@@ -144,6 +158,59 @@ const Toolbar = ({ mindMap, user, onLogout, onExportPNG }) => {
 
         <div className={styles.divider} />
 
+        {/* Меню Файл со всеми операциями */}
+        <div className={styles.fileMenuWrapper} ref={menuRef}>
+          <Button 
+            icon="Menu" 
+            onClick={() => setFileMenuOpen(!fileMenuOpen)}
+            variant={fileMenuOpen ? 'active' : 'default'}
+          />
+          
+          {fileMenuOpen && (
+            <div className={styles.fileMenu}>
+              {/* Открыть каталог карт (Ctrl+O) */}
+              <button onClick={handleOpenCatalog} className={styles.menuItem}>
+                <Icon name="FolderOpen" size={16} />
+                <span>Открыть</span>
+                <kbd>Ctrl+O</kbd>
+              </button>
+              
+              {/* Сохранить в localStorage (Ctrl+S) */}
+              <button onClick={handleSaveToStorage} className={styles.menuItem}>
+                <Icon name="Save" size={16} />
+                <span>Сохранить</span>
+                <kbd>Ctrl+S</kbd>
+              </button>
+
+              <div className={styles.menuDivider} />
+              
+              {/* Сохранить в файл (Ctrl+Shift+S) */}
+              <button onClick={handleSaveToDisk} className={styles.menuItem}>
+                <Icon name="Download" size={16} />
+                <span>Сохранить в файл</span>
+                <kbd>Ctrl+Shift+S</kbd>
+              </button>
+              
+              {/* Загрузить из файла (Ctrl+Shift+O) */}
+              <button onClick={handleLoad} className={styles.menuItem}>
+                <Icon name="Upload" size={16} />
+                <span>Загрузить из файла</span>
+                <kbd>Ctrl+Shift+O</kbd>
+              </button>
+              
+              <div className={styles.menuDivider} />
+              
+              {/* Экспорт PNG */}
+              <button onClick={handleExport} className={styles.menuItem}>
+                <Icon name="Image" size={16} />
+                <span>Экспорт PNG</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.divider} />
+
         <div className={styles.tools}>
           <Button
             icon="Plus"
@@ -181,7 +248,7 @@ const Toolbar = ({ mindMap, user, onLogout, onExportPNG }) => {
             icon="Unlink"
             onClick={() => selectedNodes.length === 1 && toggleDetached(selectedNodes[0])}
             disabled={selectedNodes.length !== 1}
-            title="Открепить/прикрепить узел"
+            title="Отсоединить/присоединить узел"
           />
 
           <div className={styles.divider} />
@@ -208,43 +275,7 @@ const Toolbar = ({ mindMap, user, onLogout, onExportPNG }) => {
           <span className={styles.zoomValue}>{Math.round(scale * 100)}%</span>
           <Button icon="ZoomIn" onClick={zoomIn} size="sm" />
           <Button icon="Maximize" onClick={resetView} size="sm" title="Сбросить вид" />
-          <Button icon="Scan" onClick={fitToScreen} size="sm" title="Вписать в экран" />
-        </div>
-
-        <div className={styles.divider} />
-
-        {/* Меню файлов */}
-        <div className={styles.fileMenuWrapper} ref={menuRef}>
-          <Button 
-            icon="Folder" 
-            onClick={() => setFileMenuOpen(!fileMenuOpen)}
-            variant={fileMenuOpen ? 'active' : 'default'}
-          >
-            Файл
-          </Button>
-          
-          {fileMenuOpen && (
-            <div className={styles.fileMenu}>
-              <button onClick={handleSave} className={styles.menuItem}>
-                <Icon name="Download" size={16} />
-                <span>Сохранить</span>
-                <kbd>Ctrl+S</kbd>
-              </button>
-              
-              <button onClick={handleLoad} className={styles.menuItem}>
-                <Icon name="Upload" size={16} />
-                <span>Загрузить</span>
-                <kbd>Ctrl+O</kbd>
-              </button>
-              
-              <div className={styles.menuDivider} />
-              
-              <button onClick={handleExport} className={styles.menuItem}>
-                <Icon name="Image" size={16} />
-                <span>Экспорт PNG</span>
-              </button>
-            </div>
-          )}
+          <Button icon="Scan" onClick={fitToScreen} size="sm" title="По размеру экрана" />
         </div>
 
         <div className={styles.divider} />
